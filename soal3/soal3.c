@@ -34,9 +34,14 @@ int cek_dot(char dir[]){
 	return last;
 }
 
-void* makefile(void *ext){
-
+void* makedir(void *ext){
+    char dir[SIZE] = "/home/dohan/sisop20/modul3/";
+    strcat(dir,ext);
+    printf("%s\n",dir);
+    int result = mkdir(dir,0700);
 } 
+
+void* movefile()
 
 int cekfile(char dir[]){
 
@@ -59,7 +64,6 @@ int main(int argc, char **argv){
     //get argument
     if ( strcmp(argv[1],"-f")== 0)
     {
-        /* code */
         printf("oyi\n");
     }
     else if (strcmp(argv[1],"-d")== 0)
@@ -86,20 +90,11 @@ int main(int argc, char **argv){
 
         ext = strchr(str,'.');
         strcpy(save_ext,ext+1);
-        printf("%s\n",save_ext);
-        pthread_create(&tid[i],NULL,makefile,(void*) ext+1);
-        
-        /*
-        int start,last;
-        start = cek_slash(argv[i]);
-        last = cek_dot(argv[i]);
-        printf("%s")
-        */
-
+        // printf("%s",save_ext);
+        pthread_create(&tid[i],NULL,makedir,(void*) ext+1);
+        pthread_join(tid[i],NULL);
        
     }
-    
-
 }
 
 
