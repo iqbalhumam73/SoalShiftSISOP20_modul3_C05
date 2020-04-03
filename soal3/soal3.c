@@ -41,7 +41,7 @@ void* makedir(void *ext){
     int result = mkdir(dir,0700);
 } 
 
-void* movefile()
+// void* movefile()
 
 int cekfile(char dir[]){
 
