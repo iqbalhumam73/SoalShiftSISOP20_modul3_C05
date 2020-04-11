@@ -13,6 +13,7 @@
 
 #define SIZE 200
 
+pthread_t tid[3];
 
 char huruf[SIZE], current_dir[SIZE];
 char *arr[4] ,*arr2[20], arr3[SIZE]; //arr menyimpan ekxstensi arr2 menyimpan nama file
@@ -71,7 +72,6 @@ int cekfile(char dir[]){
 int main(int argc, char **argv){
     
     const char ext[SIZE];
-    pthread_t tid[argc-2];
     char save[argc];
     int i=0,j=0;
 
@@ -88,13 +88,61 @@ int main(int argc, char **argv){
             i++;
         }   
     }
-    else if (strcmp(argv[1],"-d")== 0)
-    {
+    else if (strcmp(argv[1],"-d")== 0){
+
+        printf("Masuk ke -d\n");
         
+        char path1[200],path2[200];
+        DIR *dir; //pointer yang menunjuk ke direktori
+        struct dirent *de;  //membaca file yang terdapat pada direktori
+        dir = opendir(argv[2]); 
+        int test = 0, i =0;
+        if(dir == NULL) printf("Error!\n");
+        else if(!dir) printf("Periksa lagi, apakah direktori tersebut ada?\n");
+         // loop ketika sebuah direktori ada file/folder didalamnya
+        while( (de=readdir(dir)) )
+        {
+            if ( !strcmp(de->d_name, ".") || !strcmp(de->d_name, "..") ); 
+		//namafile
+            printf("%s\n",de->d_name);
+            strcpy(path1,argv[2]); //copy string ke variabel path1
+            strcat(path1,"/"); //menyambungkan perargumennya
+            strcat(path1,de->d_name); 
+            if(de->d_type == 8){
+            pthread_create(&(tid[i]),NULL,makeit,path1); //membuat thread
+            pthread_join(tid[i],NULL);
+            i++;
+            }
+        }
+         printf("SELESAI\n");
     }
-    else if (strcmp(argv[1],"*")== 0)
-    {
-        /* code */
+    else if (strcmp(argv[1],"*")== 0){
+
+        printf("Masuk ke *\n");
+        DIR *dir;
+        struct dirent *de; //membaca file yang terdapat pada direktori
+        char path1[100],path2[100];
+        dir = opendir(current_dir); //membuka direktori yang sekarang
+        int test = 0, i =0;
+        if(dir == NULL) printf("Error!\n");
+       else if(!dir) printf("Periksa lagi, apakah direktori tersebut ada?\n");
+        // loop ketika sebuah direktori ada file/folder didalamnya
+        while ((de=readdir(dir)) )
+        {
+            if ( !strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."));
+             //lanjutkan
+            printf("%s \n",de->d_name); //nama file
+            strcpy(path1,current_dir); //copy string ke variabel path1
+            strcat(path1,"/"); 
+            strcat(path1,de->d_name);
+            if(de->d_type == 8){
+                //membuat thread
+            pthread_create(&(tid[i]),NULL,makeit,path1); 
+            pthread_join(tid[i],NULL);
+            i++;
+            }
+        }
+        
     }
     
     
@@ -144,27 +192,59 @@ void* makeit(void *arg)
     strcpy(abc,arr[a-1]);
     for(i = 0; abc[i]; i++) abc[i] = tolower(abc[i]); //convert menjadi lowercase letter
 
+    DIR *fold; //pointer yang menunjuk ke folder/direktori
+    struct dirent *de1;
     char place1[100],place2[100];
+    fold = opendir(current_dir); //open direktori saat ini
+    int test = 0;
+    //printf("a = %d\n", a);
+    if(a>1){
 
-    //menyusun direktori lokasi file
-    strcpy(place1,current_dir);
-    strcat(place1,"/");
-    strcat(place1,abc);
-    //memberitahu lokasi file
-    printf("Berada di = %s\n%s\n",abc,place1);
-    printf("SELESAI\n");
-    mkdir(place1, 0777);
-    
-	
+        if(fold == NULL) printf("Error!\n");
+           else if(!fold)
+            printf("Periksa lagi, apakah direktori tersebut ada?\n");
+        // loop ketika sebuah direktori ada file/folder didalamnya
+        while( (de1=readdir(fold)) )
+        { 
+            if(strcmp(de1->d_name,abc) == 0 && de1->d_type == 4){
+                test = 1;
+                break;
+            }
+        }
 
-    char sumber[1024], tujuan[1024];
+        if(test == 0){
+            //menyusun direktori lokasi file
+            strcpy(place1,current_dir);
+            strcat(place1,"/");
+            strcat(place1,abc);
+            //memberitahu lokasi file
+            printf("Berada di = %s\n%s\n",abc,place1);
+            printf("SELESAI\n");
+            mkdir(place1, 0777);
+        }
+    }
+
+    else{
+        //apabila file tidak ada ekstensi 
+        //memberitahu lokasi file 
+        strcpy(place1, current_dir); //direktori sekarang
+        strcat(place1,"/");
+        strcat(place1,"Unknown"); 
+        printf("Berada di = %s\n%s\n",abc,place1);
+        printf("SELESAI\n");
+        mkdir(place1, 0777);
+    }
+
+
+   char sumber[1024], tujuan[1024];
     //lokasi file
     strcpy(sumber,arg);
     strcpy(tujuan,current_dir);
     strcat(tujuan,"/");
-    
-    //untuk move file dengan rename
-    strcat(tujuan, abc);
+    //jika tidak ada ekstensi
+    if(a== 1) strcat(tujuan,"Unknown");
+    //memiliki ekstensi 
+    else strcat(tujuan, abc);
     strcat(tujuan,"/");
     strcat(tujuan,arr3);
     rename(sumber,tujuan);
